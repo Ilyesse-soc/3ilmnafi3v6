@@ -1,0 +1,36 @@
+
+# INSTRUCTIONS DE DÉPLOIEMENT SUR O2SWITCH
+
+## 1. Connexion au serveur
+# Connectez-vous à votre serveur o2switch via SSH ou FTP
+
+## 2. Sauvegarde
+# Sauvegardez l'ancien fichier avant modification
+cp routes/subcategoryRoute.js routes/subcategoryRoute.js.backup
+
+## 3. Remplacement du fichier
+# Copiez le nouveau contenu du fichier local routes/subcategoryRoute.js
+# vers le serveur dans le même répertoire
+
+## 4. Vérification
+# Vérifiez que le fichier est bien en place:
+ls -la routes/subcategoryRoute.js
+cat routes/subcategoryRoute.js | grep "Total des thèmes: 31"
+
+## 5. Redémarrage
+# Redémarrez le service Node.js (commande dépend de votre config)
+# Exemples possibles:
+pm2 restart app
+# ou
+systemctl restart nodejs
+# ou
+killall node && node app.js &
+
+## 6. Test
+# Testez l'API après redémarrage:
+curl https://3ilmnafi3.digilocx.fr/api/subcategories | jq '.total'
+# Doit retourner: 256
+
+## 7. Test spécifique par thème
+curl https://3ilmnafi3.digilocx.fr/api/subcategories/theme/1 | jq '.data | length'
+# Doit retourner: 11 (Tawhid)

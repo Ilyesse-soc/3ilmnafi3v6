@@ -1,0 +1,36 @@
+# Flutter
+.dart_tool/
+.buildlog/
+.packages
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+coverage/
+build/
+**/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/app/release/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+*.pem
+*.p12
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Artifacts
+*.aab
+*.apk
