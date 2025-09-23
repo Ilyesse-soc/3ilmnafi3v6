@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:_3ilm_nafi3/models/uploader.dart';
 import 'package:_3ilm_nafi3/screens/video_screen.dart';
+import 'package:_3ilm_nafi3/widgets/robust_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -273,11 +274,11 @@ class _SubcategoryPageState extends State<SubcategoryPage> {
                         videoUrl: video.videoUrl ?? '',
                         title: video.title,
                         uploader: Uploader(
-                          id: video.uploader['id'],
+                          id: video.uploader['id'] ?? 'unknown',
                           isAdmin: false,
-                          username: video.uploader['username'].split(';')[0],
+                          username: (video.uploader['username'] ?? 'Utilisateur inconnu;;;').split(';')[0],
                           email: '',
-                          profilePic: video.uploader['username'].split(';')[2],
+                          profilePic: (video.uploader['username'] ?? ';;0;').split(';')[2],
                         ),
                         likeCount: video.likesCount,
                         refr: video.ref,
@@ -292,14 +293,12 @@ class _SubcategoryPageState extends State<SubcategoryPage> {
                     Expanded(
                       child: Stack(
                         children: [
-                          video.imageUrl != null && video.imageUrl!.isNotEmpty
-                            ? Image.network(video.imageUrl!, fit: BoxFit.cover, width: double.infinity)
-                            : Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                color: Colors.grey.shade300,
-                                child: Icon(Icons.video_library, size: 50, color: Colors.grey.shade600),
-                              ),
+                          RobustNetworkImage(
+                            imageUrl: video.imageUrl,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                           if (isSeen)
                             Positioned(
                               bottom: 6,

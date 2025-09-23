@@ -3,20 +3,30 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/uploader.dart';
 import '../models/video.dart';
-import 'video_screen.dart';
+import 'subcategory_videos_page.dart';
 
-// Fonction pour récupérer les vidéos du thème Prière
-Future<List<Video>> fetchVideosForTheme(String themeId) async {
+// Fonction pour récupérer le nombre de vidéos par sous-catégorie
+Future<Map<String, int>> fetchVideoCountsForTheme(String themeId) async {
   final url = Uri.parse('https://3ilmnafi3.digilocx.fr/api/videos/isvalid/theme/$themeId');
   final response = await http.get(url);
+  
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
-    final List videosJson = data['videos'];
-    return videosJson.map((json) => Video.fromJson(json)).toList();
+    final List videosJson = data['videos'] ?? [];
+    final videos = videosJson.map((json) => Video.fromJson(json)).toList();
+    
+    // Compter les vidéos par sous-catégorie
+    Map<String, int> counts = {};
+    for (final video in videos) {
+      for (final subcategory in video.subcategories) {
+        counts[subcategory] = (counts[subcategory] ?? 0) + 1;
+      }
+    }
+    
+    return counts;
   }
-  throw Exception('Failed to load videos');
+  throw Exception('Failed to load video counts');
 }
 
 class TawhidPage extends StatefulWidget {
@@ -28,36 +38,52 @@ class TawhidPage extends StatefulWidget {
 
 class _TawhidPageState extends State<TawhidPage> {
   
-  List<Video> videos = [];
+  Map<String, int> subcategoryVideoCounts = {};
   bool isLoading = true;
-  final String prayerThemeId = "33b5b607-10f7-4b40-a1ad-8becbcfa7983"; // ID du thème Prière
+  final String tawhidThemeId = "92a89d9e-ebf2-4ed3-9ce4-03d06f7a6690"; // ID du thème Tawhid
+  final String themeName = "Tawhid";
+  
+  // Sous-catégories du thème Tawhid
+  final List<String> tawhidSubcategories = [
+    'L\'intention',
+    'Définition du tawhid',
+    'Tawhid de l\'adoration',
+    'Tawhid de la seigneurie',
+    'Tawhid des noms et attributs',
+    'Le shirk majeur',
+    'Le shirk mineur',
+    'Le shirk caché',
+    'L\'aveux et le désaveu',
+    'Tawhid dans le coran',
+    'Tawhid dans la Sunna',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadPrayerVideos();
+    _loadVideoCountsForSubcategories();
   }
 
-  Future<void> _loadPrayerVideos() async {
+  Future<void> _loadVideoCountsForSubcategories() async {
     setState(() {
       isLoading = true;
     });
     
     try {
-      print('🔄 Chargement des vidéos du thème Prière...');
-      videos = await fetchVideosForTheme(prayerThemeId);
-      print('📊 Vidéos récupérées: ${videos.length}');
+      print('🔄 Chargement des compteurs de vidéos par sous-catégorie...');
+      final counts = await fetchVideoCountsForTheme(tawhidThemeId);
       
-      // Afficher les titres des vidéos pour debug
-      for (int i = 0; i < videos.length; i++) {
-        print('  ${i + 1}. ${videos[i].title}');
+      print('📊 Compteurs récupérés:');
+      for (final entry in counts.entries) {
+        print('  ${entry.key}: ${entry.value} vidéos');
       }
       
       setState(() {
+        subcategoryVideoCounts = counts;
         isLoading = false;
       });
     } catch (e) {
-      print('❌ Erreur lors du chargement des vidéos: $e');
+      print('❌ Erreur lors du chargement des compteurs: $e');
       setState(() {
         isLoading = false;
       });
@@ -74,186 +100,181 @@ class _TawhidPageState extends State<TawhidPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
+                      CircularProgressIndicator(color: Color(0xff345d42)),
                       SizedBox(height: 16),
-                      Text("Chargement des vidéos...", style: TextStyle(color: Colors.grey)),
+                      Text("Chargement des sous-catégories...", style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 )
-              : videos.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.video_library_outlined, size: 64, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text(
-                          "Aucune vidéo validée trouvée\npour le thème Prière",
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: _loadPrayerVideos,
-                          icon: Icon(Icons.refresh),
-                          label: Text("Actualiser"),
-                        ),
-                      ],
-                    ),
-                  )
-                : Column(
-                    children: [
-                      // En-tête avec nombre de vidéos et bouton refresh
-                      Container(
-                        margin: EdgeInsets.only(top: 80, left: 16, right: 16, bottom: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Prière (${videos.length} vidéos)",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
+              : Column(
+                  children: [
+                    // En-tête avec titre et bouton refresh
+                    Container(
+                      margin: EdgeInsets.only(top: 80, left: 16, right: 16, bottom: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Tawhid",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff345d42),
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: _loadPrayerVideos,
-                              icon: Icon(Icons.refresh, color: Colors.orange),
-                              tooltip: "Actualiser",
-                            ),
-                          ],
-                        ),
+                              Text(
+                                "${tawhidSubcategories.length} sous-catégories",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            onPressed: _loadVideoCountsForSubcategories,
+                            icon: Icon(Icons.refresh, color: Color(0xff345d42)),
+                            tooltip: "Actualiser",
+                          ),
+                        ],
                       ),
-                      
-                      // Grille des vidéos
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 16.0,
-                              mainAxisSpacing: 16.0,
-                              childAspectRatio: 9 / 16,
-                            ),
-                            itemCount: videos.length,
-                            itemBuilder: (context, index) {
-                              final video = videos[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => VideoPage(
-                                        videoId: video.id,
-                                        videoUrl: video.videoUrl ?? '',
-                                        title: video.title,
-                                        uploader: Uploader.fromJson(video.uploader),
-                                        likeCount: video.likesCount,
-                                        refr: video.ref,
+                    ),
+                    
+                    // Liste des sous-catégories
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: ListView.builder(
+                          itemCount: tawhidSubcategories.length,
+                          itemBuilder: (context, index) {
+                            final subcategory = tawhidSubcategories[index];
+                            final videoCount = subcategoryVideoCounts[subcategory] ?? 0;
+                            
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 12),
+                              child: Material(
+                                borderRadius: BorderRadius.circular(12),
+                                elevation: 2,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () {
+                                    // Naviguer vers la page des vidéos de cette sous-catégorie
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SubcategoryVideosPage(
+                                          themeName: themeName,
+                                          subcategoryName: subcategory,
+                                          themeId: tawhidThemeId,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                        colors: [
+                                          Color(0xffff751f).withOpacity(0.1),
+                                          Color(0xffff751f).withOpacity(0.2),
+                                        ],
                                       ),
                                     ),
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Stack(
+                                    child: Row(
                                       children: [
-                                        // Image ou container de fallback
-                                        video.imageUrl != null && video.imageUrl!.isNotEmpty
-                                          ? Image.network(
-                                              video.imageUrl!,
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                            )
-                                          : Container(
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              color: Colors.grey.shade300,
-                                              child: Icon(Icons.video_library, size: 50, color: Colors.grey.shade600),
-                                            ),
+                                        // Icône de catégorie
+                                        Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xff345d42),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Icon(
+                                            _getSubcategoryIcon(subcategory),
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
                                         
-                                        // Gradient overlay
-                                        Positioned(
-                                          bottom: 0,
-                                          left: 0,
-                                          right: 0,
-                                          child: Container(
-                                            height: 80,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                begin: Alignment.bottomCenter,
-                                                end: Alignment.topCenter,
-                                                colors: [
-                                                  Colors.black.withOpacity(0.7),
-                                                  Colors.transparent,
-                                                ],
+                                        SizedBox(width: 16),
+                                        
+                                        // Nom de la sous-catégorie
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                subcategory,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xff345d42),
+                                                ),
                                               ),
-                                            ),
+                                              if (videoCount > 0)
+                                                Text(
+                                                  "$videoCount vidéo${videoCount > 1 ? 's' : ''}",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Color(0xffff751f),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                         
-                                        // Titre de la vidéo
-                                        Positioned(
-                                          bottom: 8,
-                                          left: 8,
-                                          right: 8,
-                                          child: Text(
-                                            video.title,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
+                                        // Badge avec le nombre de vidéos et flèche
+                                        Row(
+                                          children: [
+                                            if (videoCount > 0)
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Color(0xffff751f),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  videoCount.toString(),
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            SizedBox(width: 8),
+                                            Icon(
+                                              Icons.arrow_forward_ios,
+                                              color: Color(0xff345d42),
+                                              size: 16,
                                             ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        
-                                        // Icône de lecture
-                                        Center(
-                                          child: Container(
-                                            padding: EdgeInsets.all(12),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.9),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.play_arrow,
-                                              color: Colors.black,
-                                              size: 24,
-                                            ),
-                                          ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
+            
+            // Bouton retour
             Positioned(
               top: 40,
               left: 10,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.orange, size: 35),
+                icon: Icon(Icons.arrow_back, color: Color(0xff345d42), size: 35),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -262,5 +283,35 @@ class _TawhidPageState extends State<TawhidPage> {
           ],
         ),
     );
+  }
+
+  /// Retourne une icône appropriée pour chaque sous-catégorie du Tawhid
+  IconData _getSubcategoryIcon(String subcategory) {
+    switch (subcategory) {
+      case 'L\'intention':
+        return Icons.favorite;
+      case 'Définition du tawhid':
+        return Icons.book;
+      case 'Tawhid de l\'adoration':
+        return Icons.mosque;
+      case 'Tawhid de la seigneurie':
+        return Icons.admin_panel_settings;
+      case 'Tawhid des noms et attributs':
+        return Icons.stars;
+      case 'Le shirk majeur':
+        return Icons.warning;
+      case 'Le shirk mineur':
+        return Icons.error_outline;
+      case 'Le shirk caché':
+        return Icons.visibility_off;
+      case 'L\'aveux et le désaveu':
+        return Icons.handshake;
+      case 'Tawhid dans le coran':
+        return Icons.menu_book;
+      case 'Tawhid dans la Sunna':
+        return Icons.library_books;
+      default:
+        return Icons.star;
+    }
   }
 }

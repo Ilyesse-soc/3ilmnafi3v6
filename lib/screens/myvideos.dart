@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:_3ilm_nafi3/constants.dart';
-// S'assurer que le fichier existe bien dans lib/utils/nom_respectueux.dart
+import 'package:_3ilm_nafi3/services/video_service.dart';
 import 'package:_3ilm_nafi3/utils/nom_respectueux.dart';
+import 'package:_3ilm_nafi3/widgets/robust_network_image.dart';
 import 'package:flutter/material.dart';
-// Retirer l'import direct de flutter_local_notifications ici
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,21 +35,33 @@ class _MyVideosPageState extends State<MyVideosPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     loggedID = prefs.getString('loggedID');
 
-    final response = await http.get(
-      Uri.parse("https://3ilmnafi3.digilocx.fr/api/videos"),
-    );
+    print('🔍 Chargement des vidéos pour l\'utilisateur: $loggedID');
 
-    if (response.statusCode == 200 && loggedID != null) {
-      List allVideos = json.decode(response.body);
+    try {
+      // Utiliser VideoService pour récupérer TOUTES les vidéos de l'utilisateur (validées et non-validées)
+      final userVideos = await VideoService.getUserVideos();
+      
+      print('📊 Total vidéos utilisateur récupérées: ${userVideos.length}');
+      
       setState(() {
-        myVideos =
-            allVideos
-                .map((json) => Video.fromJson(json))
-                .where((video) => video.uploader['id'] == loggedID)
-                .toList();
+        myVideos = userVideos;
+        
+        print('✅ Mes vidéos: ${myVideos.length}');
+        
+        // Debug: afficher les infos des vidéos avec leur statut
+        for (int i = 0; i < myVideos.length; i++) {
+          final video = myVideos[i];
+          print('  ${i + 1}. ${video.title}');
+          print('     - Image: ${video.imageUrl ?? "null"}');
+          print('     - Valid: ${video.isValid}');
+          print('     - Uploader: ${video.uploader['name'] ?? 'Utilisateur inconnu'}');
+          print('     - Status: ${video.isValid ? "✅ Validée" : "⏳ En attente"}');
+        }
+        
         isLoading = false;
       });
-    } else {
+    } catch (e) {
+      print('❌ Erreur lors du chargement des vidéos: $e');
       setState(() => isLoading = false);
     }
   }
@@ -91,34 +100,58 @@ class _MyVideosPageState extends State<MyVideosPage> {
                 itemBuilder: (context, index) {
                   final video = myVideos[index];
                   return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AspectRatio(
-                        aspectRatio: 9 / 16,
+                      Expanded(
+                        flex: 7,
                         child: Stack(
                           children: [
                             Container(
+                              width: double.infinity,
+                              height: double.infinity,
                               decoration: BoxDecoration(
-                                image: video.imageUrl != null && video.imageUrl!.isNotEmpty 
-                                  ? DecorationImage(
-                                      image: NetworkImage(video.imageUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
                                 borderRadius: BorderRadius.circular(8),
-                                color: video.imageUrl == null || video.imageUrl!.isEmpty 
-                                  ? Colors.grey.shade300 
-                                  : null,
+                                color: Colors.grey.shade300,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              child: video.imageUrl == null || video.imageUrl!.isEmpty
-                                ? const Center(
-                                    child: Icon(
-                                      Icons.video_library,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : null,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: RobustNetworkImage(
+                                  imageUrl: video.imageUrl,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
+                            
+                            // Indicateur de statut de validation
+                            Positioned(
+                              top: 4,
+                              left: 4,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: video.isValid ? Colors.green : Colors.orange,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  video.isValid ? 'Validée' : 'En attente',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            
                             Positioned(
                               top: 4,
                               right: 4,
@@ -166,21 +199,41 @@ class _MyVideosPageState extends State<MyVideosPage> {
                         ),
                       ),
                       SizedBox(height: 4),
-                      Text(
-                        video.title,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        afficherNomRespectueux(
-                          video.uploader['name'],
-                          video.uploader['genre'] ?? 'homme', // valeur par défaut si absent
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                video.title,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Flexible(
+                              child: Text(
+                                afficherNomRespectueux(
+                                  video.uploader['name'] ?? 'Utilisateur inconnu',
+                                  video.uploader['genre'] ?? 'homme', // valeur par défaut si absent
+                                ),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

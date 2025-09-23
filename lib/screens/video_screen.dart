@@ -344,10 +344,10 @@ class _VideoPageState extends State<VideoPage> {
                   child: CircleAvatar(
                     radius: 25,
                     backgroundColor: Colors.black,
-                    child: widget.uploader.profilePic == "0"
+                    child: (widget.uploader.profilePic == null || widget.uploader.profilePic == "0")
                         ? Icon(Icons.person, color: Colors.white, size: 30)
                         : null,
-                    backgroundImage: widget.uploader.profilePic != "0"
+                    backgroundImage: (widget.uploader.profilePic != null && widget.uploader.profilePic != "0")
                         ? AssetImage(
                             "assets/images/small_profiles/profile${widget.uploader.profilePic}.PNG",
                           )

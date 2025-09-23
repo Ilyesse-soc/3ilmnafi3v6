@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:_3ilm_nafi3/constants.dart';
+import 'package:_3ilm_nafi3/widgets/robust_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
@@ -51,7 +52,12 @@ class _ImageVideoPagerState extends State<_ImageVideoPager> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.network(widget.imageUrl, fit: BoxFit.fill),
+          child: RobustNetworkImage(
+            imageUrl: widget.imageUrl,
+            fit: BoxFit.fill,
+            width: double.infinity,
+            height: double.infinity,
+          ),
         ),
         _isVideoInitialized
             ? Stack(
@@ -228,14 +234,12 @@ class _AdminValidationPageState extends State<AdminValidationPage> {
                         showVideoDialog(context, video.imageUrl!, video.videoUrl!);
                       }
                     },
-                    child: video.imageUrl != null
-                        ? Image.network(
-                            video.imageUrl!,
-                            width: 50,
-                            height: 170,
-                            fit: BoxFit.fitHeight,
-                          )
-                        : Icon(Icons.image_not_supported, size: 50),
+                    child: RobustNetworkImage(
+                      imageUrl: video.imageUrl,
+                      width: 50,
+                      height: 170,
+                      fit: BoxFit.fitHeight,
+                    ),
                   ),
                   title: Text(
                     video.title,

@@ -358,7 +358,7 @@ class _UploadPageV2State extends State<UploadPageV2> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Section titre
-              _buildSectionTitle("📝 Informations générales"),
+              _buildSectionTitle("📝 Informations de ma vidéo"),
               const SizedBox(height: 12),
               
               _buildTitleField(),

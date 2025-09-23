@@ -15,10 +15,10 @@ class Uploader {
 
   factory Uploader.fromJson(Map<String, dynamic> json) {
     return Uploader(
-      id: json['id'],
-      isAdmin: json['isAdmin'],
-      username: json['username'],
-      email: json['email'],
+      id: json['id'] ?? '',
+      isAdmin: json['isAdmin'] ?? false,
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
       profilePic: json['profilePic'],
     );
   }

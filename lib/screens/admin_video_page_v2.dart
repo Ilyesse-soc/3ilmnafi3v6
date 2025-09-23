@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/video.dart';
 import '../services/video_service.dart';
+import '../widgets/robust_network_image.dart';
 import '../widgets/video_submission_info_widget.dart';
 import 'admin_video_details_page.dart';
 
@@ -406,7 +407,7 @@ class _AdminVideoPageV2State extends State<AdminVideoPageV2>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Uploader: ${video.uploader['username'] ?? 'Inconnu'}",
+                        "Uploader: ${(video.uploader['username'] ?? 'Inconnu').toString().split(';')[0]}",
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                     ],
@@ -447,13 +448,12 @@ class _AdminVideoPageV2State extends State<AdminVideoPageV2>
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: video.imageUrl != null
-                        ? Image.network(
-                            video.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.error),
-                          )
-                        : const Icon(Icons.image_not_supported),
+                    child: RobustNetworkImage(
+                      imageUrl: video.imageUrl,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),

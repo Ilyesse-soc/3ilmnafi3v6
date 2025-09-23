@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utils/subcategory_encoder.dart';
+import '../widgets/robust_network_image.dart';
 
 class Video {
   final String id;
@@ -107,14 +108,12 @@ class VideoWidget extends StatelessWidget {
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: video.imageUrl != null && video.imageUrl!.isNotEmpty
-            ? Image.network(video.imageUrl!)
-            : Container(
-                width: double.infinity,
-                height: 200,
-                color: Colors.grey.shade300,
-                child: Icon(Icons.video_library, size: 50, color: Colors.grey.shade600),
-              ),
+          child: RobustNetworkImage(
+            imageUrl: video.imageUrl,
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -148,6 +147,9 @@ class UserProfileWidget extends StatelessWidget {
                   "assets/images/profiles/profile${profilePic}.PNG",
                 )
               : null,
+      child: profilePic == "0"
+          ? Icon(Icons.person, color: Colors.white)
+          : null,
     );
   }
 }

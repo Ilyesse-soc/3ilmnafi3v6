@@ -127,7 +127,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
             // Nom utilisateur
             Text(
-              widget.user.username.replaceAll(RegExp(r'/'), ''),
+              widget.user.username.replaceAll(RegExp(r'/'), '').split(';')[0],
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
@@ -294,14 +294,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Action à définir
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.green,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Action à définir
+      //   },
+      //   child: const Icon(Icons.add),
+      //   backgroundColor: Colors.green,
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/video.dart';
+import '../widgets/robust_network_image.dart';
 
 class AdminVideoDetailsPage extends StatefulWidget {
   final Video video;
@@ -94,20 +95,14 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
 
             Text("🖼️ Image & Vidéo :", style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
-            if (video.imageUrl != null && video.imageUrl!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(video.imageUrl!),
-              )
-            else
-              Container(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: RobustNetworkImage(
+                imageUrl: video.imageUrl,
                 width: double.infinity,
                 height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.video_library, size: 50, color: Colors.grey.shade600),
+                fit: BoxFit.cover,
+              ),
               ),
             SizedBox(height: 16),
 

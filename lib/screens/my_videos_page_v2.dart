@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/video.dart';
 import '../services/video_service.dart';
+import '../widgets/robust_network_image.dart';
 
 /// **MyVideosPageV2** - Suivi des vidéos soumises par l'utilisateur
 class MyVideosPageV2 extends StatefulWidget {
@@ -293,13 +294,12 @@ class _MyVideosPageV2State extends State<MyVideosPageV2>
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: video.imageUrl != null
-                        ? Image.network(
-                            video.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.error),
-                          )
-                        : const Icon(Icons.image_not_supported),
+                    child: RobustNetworkImage(
+                      imageUrl: video.imageUrl,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),

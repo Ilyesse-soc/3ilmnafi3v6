@@ -328,8 +328,9 @@ class VideoService {
       final streamedResponse = await req.send().timeout(timeout);
       final response = await http.Response.fromStream(streamedResponse);
       
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        debugPrint("✅ Upload image réussi: ${response.statusCode}");
         return data['data']?['image'] as String?;
       } else {
         debugPrint("❌ Upload image échec: ${response.statusCode} ${response.body}");
@@ -362,8 +363,9 @@ class VideoService {
       final streamedResponse = await req.send().timeout(timeout);
       final response = await http.Response.fromStream(streamedResponse);
       
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        debugPrint("✅ Upload vidéo réussi: ${response.statusCode}");
         return data['data']?['video'] as String?;
       } else {
         debugPrint("❌ Upload vidéo échec: ${response.statusCode} ${response.body}");

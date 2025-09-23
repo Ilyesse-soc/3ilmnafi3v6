@@ -1,17 +1,17 @@
 // profile_screen.dart
 
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:_3ilm_nafi3/constants.dart'; // expose `green`
 import 'package:_3ilm_nafi3/models/user.dart';
 import 'package:_3ilm_nafi3/screens/myvideos.dart';
 import 'package:_3ilm_nafi3/screens/splash_screen.dart';
-import 'package:_3ilm_nafi3/screens/upload_page.dart';
+import 'package:_3ilm_nafi3/screens/upload_page_v2.dart';
 import 'package:_3ilm_nafi3/services/notification_service.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // -------------------- Modèle Palier --------------------
 class Palier {
@@ -207,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
     if (!mounted) return;
     if (picked != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => UploadPage(videoPath: picked.path)));
+      Navigator.push(context, MaterialPageRoute(builder: (_) => UploadPageV2(videoPath: picked.path)));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucune vidéo sélectionnée')));
     }
