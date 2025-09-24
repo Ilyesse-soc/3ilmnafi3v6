@@ -7,15 +7,15 @@ void main() {
   // Données copiées du fichier theme_subcategories.dart
   final Map<String, List<String>> themeSubcategories = {
     'Tawhid': [
-      'L'intention',
+      "L'intention",
       'Définition du tawhid',
-      'Tawhid de l'adoration',
+      "Tawhid de l'adoration",
       'Tawhid de la seigneurie',
       'Tawhid des noms et attributs',
       'Le shirk majeur',
       'Le shirk mineur',
       'Le shirk caché',
-      'L'aveux et le désaveu',
+      "L'aveux et le désaveu",
       'Tawhid dans le coran',
       'Tawhid dans la Sunna',
     ],
@@ -53,7 +53,7 @@ void main() {
     'Hajj': [
       'Le grand pèlerinage (Hajj)',
       'Le petit pèlerinage (Omra)',
-      'Condition d'obligation du Hajj',
+      "Condition d'obligation du Hajj",
       'Les piliers du Hajj',
       'Les obligations du Hajj',
       'Le jour de 3arafa',
@@ -121,7 +121,7 @@ void main() {
       'Définition de l\'innovation',
       'Innovations en croyance',
       'Innovation en adoration',
-      'Danger de l'innovation',
+      'Danger de l\'innovation',
       'Bonne innovation ?',
       'Fêtes innové',
       'Réfuter les innovateurs',
@@ -129,7 +129,7 @@ void main() {
     'Les Savants': [
       'Statut du savant en Islam',
       'Savants de la sunnah',
-      'Les grands savants dans l'Islam',
+      'Les grands savants dans l\'Islam',
     ],
     'La mort': [
       'Signe de la bonne/ mauvaise fin',
