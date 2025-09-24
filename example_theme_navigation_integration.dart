@@ -1,21 +1,20 @@
-// example_theme_navigation_integration.dart
-// 
-// EXEMPLE d'intégration de ThemeSubcategoriesPage dans votre page principale
-// Ce fichier montre comment remplacer les pages spécifiques par la page générique
+
 
 import 'package:flutter/material.dart';
 
-import '../constants/theme_ids.dart';
-import '../screens/theme_subcategories_page.dart';
+import 'lib/constants/theme_ids.dart';
+import 'lib/screens/theme_subcategories_page.dart';
 
 class MainThemePage extends StatelessWidget {
+  const MainThemePage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Thèmes Islamiques')),
+      appBar: AppBar(title: const Text('Thèmes Islamiques')),
       body: GridView.builder(
-        padding: EdgeInsets.all(16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
@@ -25,9 +24,9 @@ class MainThemePage extends StatelessWidget {
           final theme = themes[index];
           return GestureDetector(
             onTap: () {
-              // Vérifier si le thème a un ID configuré
+              
               if (hasThemeId(theme.name)) {
-                // Naviguer vers la page générique des sous-catégories
+                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -37,7 +36,7 @@ class MainThemePage extends StatelessWidget {
                   ),
                 );
               } else {
-                // Afficher un message d'information
+                
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Thème ${theme.name} en cours de configuration'),
@@ -55,26 +54,26 @@ class MainThemePage extends StatelessWidget {
                     size: 48,
                     color: theme.color,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     theme.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  // Indicateur de statut
+                  
                   Container(
-                    margin: EdgeInsets.only(top: 4),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: hasThemeId(theme.name) ? Colors.green : Colors.orange,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       hasThemeId(theme.name) ? 'Disponible' : 'En cours',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
                       ),
@@ -90,41 +89,39 @@ class MainThemePage extends StatelessWidget {
   }
 }
 
-// Exemple de structure de données pour les thèmes
+
 class ThemeData {
   final String name;
   final IconData icon;
   final Color color;
 
-  ThemeData({required this.name, required this.icon, required this.color});
+  const ThemeData({required this.name, required this.icon, required this.color});
 }
 
 final List<ThemeData> themes = [
-  ThemeData(name: 'Prière', icon: Icons.mosque, color: Colors.green),
-  ThemeData(name: 'Tawhid', icon: Icons.star, color: Colors.blue),
-  ThemeData(name: 'Ramadan', icon: Icons.nights_stay, color: Colors.purple),
-  ThemeData(name: 'Zakat', icon: Icons.volunteer_activism, color: Colors.teal),
-  ThemeData(name: 'Hajj', icon: Icons.location_on, color: Colors.brown),
-  // ... ajoutez tous les autres thèmes
+  const ThemeData(name: 'Prière', icon: Icons.mosque, color: Colors.green),
+  const ThemeData(name: 'Tawhid', icon: Icons.star, color: Colors.blue),
+  const ThemeData(name: 'Ramadan', icon: Icons.nights_stay, color: Colors.purple),
+  const ThemeData(name: 'Zakat', icon: Icons.volunteer_activism, color: Colors.teal),
+  const ThemeData(name: 'Hajj', icon: Icons.location_on, color: Colors.brown),
+  const ThemeData(name: 'Le Coran', icon: Icons.book, color: Colors.indigo),
+  const ThemeData(name: 'La Sunna', icon: Icons.library_books, color: Colors.amber),
+  const ThemeData(name: 'Prophètes', icon: Icons.people, color: Colors.cyan),
+  const ThemeData(name: '73 Sectes', icon: Icons.group, color: Colors.red),
+  const ThemeData(name: 'Compagnons', icon: Icons.person, color: Colors.orange),
+  const ThemeData(name: 'Les Savants', icon: Icons.school, color: Colors.deepPurple),
+  const ThemeData(name: 'Les innovations', icon: Icons.warning, color: Colors.redAccent),
+  const ThemeData(name: 'La mort', icon: Icons.sentiment_neutral, color: Colors.grey),
+  const ThemeData(name: 'La tombe', icon: Icons.terrain, color: Colors.brown),
+  const ThemeData(name: 'Le jour dernier', icon: Icons.schedule, color: Colors.deepOrange),
+  const ThemeData(name: 'Les 4 Imams', icon: Icons.account_balance, color: Colors.blueGrey),
+  const ThemeData(name: 'Les Anges', icon: Icons.flight, color: Colors.lightBlue),
+  const ThemeData(name: 'Les Djinns', icon: Icons.visibility_off, color: Colors.black),
+  const ThemeData(name: 'Les gens du livre', icon: Icons.menu_book, color: Colors.lime),
+  const ThemeData(name: '99 Noms', icon: Icons.format_list_numbered, color: Colors.pink),
+  const ThemeData(name: 'Femmes', icon: Icons.female, color: Colors.pinkAccent),
+  const ThemeData(name: 'Voyage', icon: Icons.flight_takeoff, color: Colors.lightGreen),
+  const ThemeData(name: 'Signes', icon: Icons.visibility, color: Colors.yellow),
+  const ThemeData(name: 'Adkars', icon: Icons.favorite, color: Colors.red),
 ];
 
-/* 
-INSTRUCTIONS D'INTÉGRATION :
-
-1. Remplacez vos pages spécifiques (comme tawhid_page.dart) par des appels à ThemeSubcategoriesPage
-2. Utilisez la fonction hasThemeId() pour vérifier si un thème est prêt
-3. Configurez progressivement les IDs dans theme_ids.dart au fur et à mesure
-
-AVANT (page spécifique) :
-onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TawhidPage()))
-
-APRÈS (page générique) :
-onTap: () => Navigator.push(context, MaterialPageRoute(
-  builder: (context) => ThemeSubcategoriesPage(themeName: 'Tawhid')
-))
-
-4. Pour récupérer les vrais IDs des thèmes, vous devez :
-   - Consulter votre base de données ou API
-   - Remplacer les placeholders dans theme_ids.dart
-   - Tester chaque thème individuellement
-*/
