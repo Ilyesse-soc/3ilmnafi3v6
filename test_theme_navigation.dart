@@ -5,7 +5,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-// Import des constantes
+
 import 'lib/constants/theme_ids.dart';
 import 'lib/constants/theme_subcategories.dart';
 
@@ -121,7 +121,7 @@ Future<void> testSubcategoryMapping() async {
   print('  • Total sous-catégories: $totalSubcategories');
   print('  • Moyenne: ${(totalSubcategories / themeCount).toStringAsFixed(1)} sous-catégories/thème');
   
-  print();
+  print('');
 }
 
 // Import simulé des fonctions (normalement depuis le vrai fichier)
