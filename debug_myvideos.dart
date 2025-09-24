@@ -7,6 +7,7 @@ void main() async {
   print('� Debug: Analyse des vidéos du thème Prière\n');
   
   final String prayerThemeId = "33b5b607-10f7-4b40-a1ad-8becbcfa7983";
+  final String userId = "VOTRE_ID_UTILISATEUR"; // Remplacez par votre vrai ID
   
   try {
     print('\n1️⃣ Test endpoint getUserVideos...');
