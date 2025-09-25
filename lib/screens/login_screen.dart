@@ -1,10 +1,9 @@
-// ✅ Page de connexion avec design raffiné marocain et logo transparent
+// ✅ Page de connexion 
 
 import 'dart:convert';
 
-import 'package:_3ilm_nafi3/models/user.dart';
-import 'package:flutter/material.dart';
 import 'package:_3ilm_nafi3/constants.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,10 +19,14 @@ class _LoginPageState extends State<LoginPage> {
   final FocusNode _passwordFocusNode = FocusNode();
   bool _isPasswordVisible = false;
 
-  Future<void> saveValues(String userID, String isAdmin) async {
+  Future<void> saveValues(Map<String, dynamic> user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("loggedID", userID);
-    await prefs.setString("admin", isAdmin);
+    await prefs.setString("loggedID", user["id"].toString());
+    await prefs.setString("admin", user["username"].toString().contains("admin") ? "yes" : "no");
+    if (user["username"] != null) await prefs.setString("username", user["username"].toString());
+    if (user["email"] != null) await prefs.setString("email", user["email"].toString());
+    if (user["profilePic"] != null) await prefs.setString("profilePic", user["profilePic"].toString());
+    if (user["userRole"] != null) await prefs.setString("userRole", user["userRole"].toString());
   }
 
   void _login(BuildContext context) async {
@@ -36,31 +39,158 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final url = Uri.parse('https://3ilmnafi3.digilocx.fr/api/users');
-    final response = await http.get(url);
-    var data = jsonDecode(response.body);
+    // Vider d'abord toute session existante
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Nettoie complètement les préférences
 
-    var loggedUser;
-    for (var element in data) {
-      if (element["username"].contains("/${_usernameController.text};") &&
-          element["username"].contains(";${_passwordController.text};")) {
-        loggedUser = element;
-        break;
+    // Afficher loading indicator simple
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
+    try {
+      final url = Uri.parse('https://3ilmnafi3.digilocx.fr/api/users');
+      final response = await http.get(url).timeout(Duration(seconds: 15)); // Timeout plus long
+      
+      // Vérifier la réponse HTTP
+      if (response.statusCode != 200) {
+        if (!mounted) return;
+        Navigator.pop(context); // Fermer loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur serveur: ${response.statusCode}. Vérifiez votre connexion.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
       }
-    }
 
-    if (loggedUser != null) {
-      if (loggedUser["username"].contains("admin")) {
-        saveValues(loggedUser["id"], "yes");
-        Navigator.pushReplacementNamed(context, '/adminConsole');
+      var data = jsonDecode(response.body);
+      
+      // Vérifier que data est une liste
+      if (data == null || data is! List) {
+        if (!mounted) return;
+        Navigator.pop(context); // Fermer loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur: format de données invalide du serveur.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
+      var loggedUser;
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
+      
+      // Debug: afficher le nombre d'utilisateurs
+      print('🔍 Nombre d\'utilisateurs dans la base: ${data.length}');
+      print('🔍 Recherche pour: "$username" / "$password"');
+      
+      for (var element in data) {
+        if (element["username"] != null) {
+          final userStr = element["username"].toString();
+          
+          // Debug: afficher quelques exemples pour comprendre le format
+          if (data.indexOf(element) < 3) {
+            print('👤 Exemple utilisateur ${data.indexOf(element)}: ${userStr.substring(0, userStr.length > 50 ? 50 : userStr.length)}...');
+          }
+          
+          // Pattern plus précis pour éviter les faux positifs
+          if (userStr.contains("/$username;") && userStr.contains(";$password;")) {
+            loggedUser = element;
+            print('✅ Utilisateur trouvé: ${element["id"]}');
+            break;
+          }
+        }
+      }
+      
+      // Si pas trouvé, essayer des patterns alternatifs
+      if (loggedUser == null) {
+        print('🔍 Recherche alternative...');
+        for (var element in data) {
+          if (element["username"] != null) {
+            final userStr = element["username"].toString().toLowerCase();
+            final userLower = username.toLowerCase();
+            final passLower = password.toLowerCase();
+            
+            if (userStr.contains(userLower) && userStr.contains(passLower)) {
+              print('🔄 Trouvé avec recherche alternative: ${element["id"]}');
+              loggedUser = element;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context); // Fermer loading
+
+      if (loggedUser != null) {
+        // Sauvegarder toutes les infos utilisateur
+        await saveValues(loggedUser);
+        if (!mounted) return;
+        // Navigation selon le type d'utilisateur
+        if (loggedUser["username"].toString().contains("admin")) {
+          Navigator.pushNamedAndRemoveUntil(context, '/adminConsole', (route) => false);
+        } else {
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        }
+        // Message de succès
+        Future.delayed(Duration(milliseconds: 500), () {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Connexion réussie !'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        });
       } else {
-        saveValues(loggedUser["id"], "no");
-        Navigator.pushReplacementNamed(context, '/home');
+        // Afficher message d'erreur plus informatif
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Identifiants incorrects"),
+                Text("Vérifiez votre nom d'utilisateur et mot de passe", 
+                     style: TextStyle(fontSize: 12)),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
       }
-    } else {
+      
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Fermer loading
+      
+      // Message d'erreur détaillé
+      String errorMessage = 'Erreur de connexion';
+      if (e.toString().contains('timeout')) {
+        errorMessage = 'Timeout: Vérifiez votre connexion internet';
+      } else if (e.toString().contains('socket')) {
+        errorMessage = 'Problème réseau: Réessayez dans quelques instants';
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Nom d'utilisateur ou mot de passe incorrect."),
+        SnackBar(
+          content: Text('$errorMessage\n${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 6),
         ),
       );
     }
